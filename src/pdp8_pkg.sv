@@ -21,7 +21,6 @@
 timeunit 1ns;
 timeprecision 1ns;
 
-
 // Pacakge definition
 package pdp8_pkg;
 

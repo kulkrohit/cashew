@@ -17,6 +17,9 @@
 //   Copyright:    Tareque Ahmad 
 // =======================================================================
 
+`include "pdp8_pkg.sv"
+import pdp8_pkg::*;
+
 module memory_pdp
   (
    // Global input
