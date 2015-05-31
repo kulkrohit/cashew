@@ -6,15 +6,13 @@
 //   Term & Year:  Spring 2015
 //   Instructor :  Tareque Ahmad
 //
-//   Project:      PDP8 Hardware Simulator top level testbench
-//                
-//
+//   Project:      Hardware implementation of PDP8
+//         
 //   Filename:     top.sv
-//   Description:  TBD
-//   Created by:   Tareque Ahmad
-//   Date:         May 03, 2015
+//   Description:  Unit Level Testbench for IFD Unit of PDP8
+//   Created by:   Rohit Kulkarni
+//   Date:         May 24, 2015
 //
-//   Copyright:    Tareque Ahmad 
 // =======================================================================
 
 `include "pdp8_pkg.sv"
@@ -51,9 +49,16 @@ module top ();
       .reset_n (reset_n));
 
 
-   memory_pdp      memory_pdp (.*);
-   instr_decode    instr_decode(.*);
-   instr_exec      instr_exec(.*);
+   //Instantiate memory_bfm here
+   Memory_BFM	   Memory_BFM(.*);
 
+   //Instantiate instr_decode here
+   instr_decode    instr_decode(.*);
+
+   //Instantiate exec_bfm here
+   EXEC_BFM	  EXEC_BFM(.*);
+
+   //Bind checker instance here	
+   bind instr_decode ifd_checker IFD_CHECKER(.*);
 
 endmodule
