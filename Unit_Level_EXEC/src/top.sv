@@ -51,9 +51,9 @@ module top ();
       .reset_n (reset_n));
 
 
-   memory_pdp      memory_pdp (.*);
-   instr_decode    instr_decode(.*);
-   instr_exec      instr_exec(.*);
-
+   memory_pdp       memory_pdp (.*);
+   instr_exec       instr_exec(.*);
+   instr_decode_BFM instr_decode_BFM(.*);
+   bind instr_exec exec_checker CHKR_INST(.*);
 
 endmodule

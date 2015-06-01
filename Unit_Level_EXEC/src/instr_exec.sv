@@ -44,7 +44,6 @@ module instr_exec
 
    // From memory_pdp module
    input   [`DATA_WIDTH-1:0] exec_rd_data  // Read data returned by memory
-
    );
 
    // Define enums for the state machine
@@ -147,8 +146,6 @@ module instr_exec
          //
          STALL:
                if (new_mem_opcode || new_op7_opcode) begin
-
-
                   int_stall        <= 1;
                   next_state       <= BRANCH;
                end else begin
