@@ -55,13 +55,18 @@ module instr_decode_BFM
  //Otherwise Acc and Link remain X throughout sim
  task clear_Acc_link_and_drive_op;
  begin 
-  if(!stall)
+  while(stall !== 1'b0)
   begin
-   pdp_op7_opcode <= '{0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0};
+    @(posedge clk);
+   //Do nothing since system might be in reset sequence
+   //wait until stall becomes 0	
+  end
+   pdp_op7_opcode = '{0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0};
+
+   repeat (4) @(posedge clk);   	//Wait until stall is asserted before going ahead
 
    //Start driving random opcodes
    drive_rand_mem_opcodes;
-  end 
  end
  endtask
 
@@ -69,9 +74,12 @@ module instr_decode_BFM
 
  //Drive mem opcodes 
  task drive_rand_mem_opcodes;
- static integer no_instr = 0;
+ static integer no_instr = 0; 
  begin
-  rand_fetched_instr  = 18'h00000;
+
+  pdp_op7_opcode = 'x;
+  pdp_mem_opcode = 'x;
+
   while(no_instr < 10)
   begin
    @(posedge clk);

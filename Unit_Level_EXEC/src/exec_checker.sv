@@ -69,42 +69,6 @@ module exec_checker
          UNSTALL } current_state, next_state;
 
 
-  //Check if instruction is of:
-  //1: mem_opcode type 
-  //2: op7_opcode type
-/*
-   assign is_mem_opcode = (pdp_mem_opcode.AND ||
-                            pdp_mem_opcode.TAD ||
-                            pdp_mem_opcode.ISZ ||
-                            pdp_mem_opcode.DCA ||
-                            pdp_mem_opcode.JMS ||
-                            pdp_mem_opcode.JMP);
-
-   assign is_op7_opcode = (pdp_op7_opcode.NOP ||
-                            pdp_op7_opcode.IAC ||
-                            pdp_op7_opcode.RAL ||
-                            pdp_op7_opcode.RTL ||
-                            pdp_op7_opcode.RAR ||
-                            pdp_op7_opcode.RTR ||
-                            pdp_op7_opcode.CML ||
-                            pdp_op7_opcode.CMA ||
-                            pdp_op7_opcode.CIA ||
-                            pdp_op7_opcode.CLL ||
-                            pdp_op7_opcode.CLA1 ||
-                            pdp_op7_opcode.CLA_CLL ||
-                            pdp_op7_opcode.HLT ||
-                            pdp_op7_opcode.OSR ||
-                            pdp_op7_opcode.SKP ||
-                            pdp_op7_opcode.SNL ||
-                            pdp_op7_opcode.SZL ||
-                            pdp_op7_opcode.SZA ||
-                            pdp_op7_opcode.SNA ||
-                            pdp_op7_opcode.SMA ||
-                            pdp_op7_opcode.SPA ||
-                            pdp_op7_opcode.CLA2);
-*/
-
-
  initial
  begin
   fork
@@ -180,6 +144,10 @@ module exec_checker
      chkr_result = operand + 1;
      if(operand == 0)
      begin
+      chkr_PC    = chkr_PC + 2;
+     end
+     else
+     begin
       chkr_PC    = chkr_PC + 1;
      end
     end
@@ -199,14 +167,13 @@ module exec_checker
     end
     else
     begin
-     //Do nothing since unsupported instruction is encountered	
+     chkr_PC    = chkr_PC + 1;
+     //Do nothing else since unsupported instruction is encountered	
     end
    end
   end
  end
  endtask
-
-
 
 endmodule
 
