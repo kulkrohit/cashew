@@ -179,9 +179,7 @@ module instr_decode
                          int_pdp_mem_opcode <= '{0,0,0,0,0,0,9'bz};
                          int_pdp_op7_opcode <= '{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}; // NOP
                       end
-
                       next_state <= STALL;
-
                    end
 
          // This state is necessary to allow the execution unit to latch the

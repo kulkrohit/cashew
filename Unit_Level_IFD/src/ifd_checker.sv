@@ -40,6 +40,16 @@ reg [`DATA_WIDTH-1:0] fetched_instr;
 pdp_mem_opcode_s pdp_mem_opcode_chk = '0;
 pdp_op7_opcode_s pdp_op7_opcode_chk = '0;
 
+
+//Enums copied from design. Should have been in a package
+   enum {IDLE,
+         READY,
+         SEND_REQ,
+         DATA_RCVD,
+         INST_DEC,
+         STALL,
+         DONE } current_state, next_state;
+
 initial
 begin
  get_fetched_instr;
@@ -120,10 +130,10 @@ end
 endtask
 
 //------------------------------------
-//Assertions
+//	Assertions
 //------------------------------------
 
-//Once IFU_RD_REQ is asserted, decoded output must be correct after 2 clock cycles  
+//Once IFU_RD_REQ is asserted, decoded mem opcode must be correct after 2 clock cycles  
 property check_pdp_mem_decoded_output;
  @(posedge clk)
  $rose(ifu_rd_req) |=> ##2 (pdp_mem_opcode_chk === pdp_mem_opcode)
@@ -131,70 +141,75 @@ endproperty
 CHECK_DEC_PDP_MEM: assert property(check_pdp_mem_decoded_output)
 else
 begin
- $error("Checker decoded instr does not match DUT decoded instr");
+ $error("[ERROR] Checker decoded instr does not match DUT decoded instr");
  $display("For fetched instruction: %h", fetched_instr);
- $display("[ERROR] DUT decoded instruction = %h, CHK decoded instruction = %h\n", pdp_mem_opcode, pdp_mem_opcode_chk);		
+ $display("DUT decoded instruction = %h, CHK decoded instruction = %h\n", pdp_mem_opcode, pdp_mem_opcode_chk);		
 end
 
 
-
-
-
-
-
-
-/*
-task compute_golden_decoded_output;
+//Once IFU_RD_REQ is asserted, decoded op7 opcode must be correct after 2 clock cycles  
+property check_pdp_op7_decoded_output;
+ @(posedge clk)
+ $rose(ifu_rd_req) |=> ##2 (pdp_op7_opcode_chk === pdp_op7_opcode)
+endproperty
+CHECK_DEC_PDP_OP7: assert property(check_pdp_mem_decoded_output)
+else
 begin
- case (fetched_instr[`DATA_WIDTH-1:`DATA_WIDTH-3])
-  3'h0:
-   begin
-    $display("AND");	
-   end
-  3'h1:
-   begin
-    $display("TAD");	
-   end
-  3'h2:
-   begin
-    $display("ISZ");	
-   end
-  3'h3:
-   begin
-    $display("DCA");	
-   end
-  3'h4:
-   begin
-    $display("JMS");	
-   end
-  3'h5:
-   begin
-    $display("JMP");	
-   end
-  //Microinstructions
-  3'h7:
-   begin
-    if(fetched_instr[`DATA_WIDTH-4]) //Group 1 Microinstructions
-    begin
-     case (fetched_instr[`DATA_WIDTH-5])
-
-     endcase	        
-    end
-    else
-    begin
-	
-    end
-
-    $display("Microinstruction");	
-   end
-  default: 
-   begin
-    $display("Illegal instruction.");	
-   end
- endcase 
+ $error("[ERROR] Checker decoded instr does not match DUT decoded instr");
+ $display("For fetched instruction: %h", fetched_instr);
+ $display("DUT decoded instruction = %h, CHK decoded instruction = %h\n", pdp_op7_opcode, pdp_op7_opcode_chk);		
 end
-endtask
-*/
+
+
+//When STALL is asserted, IFD should not fetch the next instruction and no new requests sent to EXEC unit
+property no_fetch_on_stall;
+ @(posedge clk)
+ (stall) |=> (ifu_rd_req !== 1)
+endproperty
+No_Fetch_On_Stall: assert property(no_fetch_on_stall)
+else
+begin
+ $error("[ERROR] IFD fetched an instruction when STALL was asserted.");
+ $display("At fetched instruction: %h", fetched_instr);
+end
+
+
+//Once out of reset, then all outputs are cleared in the same clock cycle
+property all_outputs_cleared_on_reset;
+ @(posedge reset_n)
+ (reset_n) |-> (((ifu_rd_req | ifu_rd_addr | ifu_rd_data | pdp_op7_opcode) === '0) && (pdp_mem_opcode === '{0,0,0,0,0,0,9'bz}))
+endproperty
+All_Outputs_Cleared_On_Reset: assert property(all_outputs_cleared_on_reset)
+else
+begin
+ $error("[ERROR] Outputs of IFD did not go 0 on coming out of reset.");
+end
+
+
+//On asserting reset, next instruction should be fetched from base address = o200
+property fetch_from_base_addr_on_reset;
+ @(posedge reset_n)
+ (reset_n) |=> (ifu_rd_addr == `START_ADDRESS)
+endproperty
+Fetch_from_Base_Addr_on_Reset: assert property(fetch_from_base_addr_on_reset)
+else
+begin
+ $error("[ERROR] On coming out of reset, first instruction was not fetched from base address.");
+end
+
+
+
+//No instructions are fetched after going into DONE state
+property no_instr_fetched_after_done;
+ @(posedge reset_n) 
+ (instr_decode.current_state == DONE) |-> (!ifu_rd_req)
+endproperty
+No_Instr_Fetched_After_DONE: assert property(no_instr_fetched_after_done)
+else
+begin
+ $error("[ERROR] Instructions are still fetched after going into DONE state.");
+end
+
 
 
 endmodule

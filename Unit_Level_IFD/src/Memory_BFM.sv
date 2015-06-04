@@ -22,7 +22,12 @@ module Memory_BFM
    output reg [`DATA_WIDTH-1:0] ifu_rd_data
 );
 
+//Localparams
+localparam instr_cnt = 10;
+localparam JMP_MAIN  = (12'ha80);
 
+//Internal variables
+integer no_instr = 0;
 
 always @(posedge clk)
 begin
@@ -38,3 +43,4 @@ end
 
 
 endmodule
+
