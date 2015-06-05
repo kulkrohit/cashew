@@ -81,7 +81,7 @@ module instr_decode_BFM
   pdp_op7_opcode = 'x;
   pdp_mem_opcode = 'x;
 
-  while(no_instr < 10)
+  while(no_instr < 100)
   begin
    @(posedge clk);
    if(!stall)

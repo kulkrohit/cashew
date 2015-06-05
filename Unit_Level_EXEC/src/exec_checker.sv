@@ -158,15 +158,16 @@ module exec_checker
     begin
      chkr_result = chkr_Acc;
      chkr_Acc 	= '0;
+     chkr_PC    = chkr_PC + 1;
     end
     else if (pdp_mem_opcode.JMS)
     begin
-      chkr_result = operand;
-      chkr_PC    = chkr_PC + 1;
+      chkr_result = chkr_PC + 1;
+      chkr_PC    = pdp_mem_opcode.mem_inst_addr + 1;
     end
     else if (pdp_mem_opcode.JMP)
     begin
-      chkr_PC    = operand;   	 
+      chkr_PC    = pdp_mem_opcode.mem_inst_addr;   	 
     end
     else
     begin
@@ -274,13 +275,6 @@ begin
  $error("[ERROR] Incorrect PC contents on instruction retire");
  $display("DUT PC = %h, CHK PC = %h\n", PC_value, chkr_PC);		
 end
-
-
-
-
-
-
-
 
 
 endmodule
