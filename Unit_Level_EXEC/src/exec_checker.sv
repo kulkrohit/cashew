@@ -48,7 +48,7 @@ module exec_checker
    reg chkr_Link;
 
 
-   //Enums for EXEC state machine (should have been defined in the package)
+   // Enums for EXEC state machine (should have been defined in the package)
    // Define enums for the state machine
    enum {IDLE,
          STALL,
@@ -131,7 +131,10 @@ module exec_checker
     else if (pdp_mem_opcode.TAD)
     begin
      chkr_Acc 	= chkr_Acc + operand;
-     chkr_Link	= chkr_Acc[`DATA_WIDTH];	
+     if(chkr_Acc[`DATA_WIDTH])
+     begin
+      chkr_Link	= ~chkr_Link;	
+     end
      chkr_PC    = chkr_PC + 1;
     end
     else if (pdp_mem_opcode.AND)
@@ -174,6 +177,111 @@ module exec_checker
   end
  end
  endtask
+
+
+ 
+
+//------------------------------------
+//	Checks / Assertions
+//------------------------------------
+
+
+// For all instructions that require writing the result back to memory,
+// 1: ISZ : C(EAddr) <- C(EAddr) + 1
+// 2: DCA : C(EAddr) <- C(AC)  
+// 3: JMS : C(EAddr) <- C(PC)
+//
+//The following acts as a common check for any instruction
+//that requires EXEC unit to write into the memory.
+//We tap it at the mem boundary and compare actual and golden result.
+//Check if result written to memory is correct for all instructions that write to memory
+property check_result_written_to_memory;
+ @(posedge clk)
+ (exec_wr_req) |=> ##2 (chkr_result == DUT_result)
+endproperty
+Check_Result_Written_to_Memory: assert property(check_result_written_to_memory)
+else
+begin
+ $error("[ERROR] Incorrect result is written to memory");
+ $display("DUT result = %h, CHK result = %h\n", DUT_result, chkr_result);		
+end
+
+
+// For all instructions that require writing the result into Accumulator
+// 1: AND : C(AC) <- C(AC) AND C(EAddr)
+// 2: TAD : C(AC) <- C(AC) + C(EAddr)
+// 3: DCA : C(AC) <- 0
+// 4: CLA_CLL: C(AC) <- 0 
+//
+//The following acts as a common check for any instruction
+//that requires EXEC unit to write into accumulator.
+//We check after every instruction retire (UNSTALL), and compare golden and actual results
+
+//Check accumulator at the end of every instruction retire
+property check_Acc_after_instr_retire;
+ @(posedge clk)
+ (instr_exec.current_state == UNSTALL) |=> ##2 (chkr_Acc[`DATA_WIDTH-1:0] == instr_exec.intAcc[`DATA_WIDTH-1:0])
+endproperty
+Check_Acc_after_Instr_Retire: assert property(check_Acc_after_instr_retire)
+else
+begin
+ $error("[ERROR] Incorrect accumulator contents on instruction retire");
+ $display("DUT Acc = %h, CHK Acc = %h\n", instr_exec.intAcc[`DATA_WIDTH-1:0], chkr_Acc[`DATA_WIDTH-1:0]);		
+end
+
+
+
+// For all instructions that may change the Link bit
+// 1: TAD : If carry out then complement Link
+// 2: CLA_CLL: Link <- 0 
+//
+//The following acts as a common check for any instruction
+//that requires EXEC unit to write into link bit.
+//We check after every instruction retire (UNSTALL), and compare golden and actual results
+
+//Check Link bit at the end of every instruction retire
+property check_Link_bit_after_instr_retire;
+ @(posedge clk)
+ (instr_exec.current_state == UNSTALL) |=> ##2 (chkr_Link == instr_exec.intLink)
+endproperty
+Check_Link_bit_after_Instr_Retire: assert property(check_Link_bit_after_instr_retire)
+else
+begin
+ $error("[ERROR] Incorrect link bit contents on instruction retire");
+ $display("DUT link bit = %h, CHK link bit = %h\n", instr_exec.intLink, chkr_Link);		
+end
+
+
+// PC changes invariably increments by 1 after every instruction
+// except a few special ones like 
+// 1: ISZ : C(PC) <- C(PC) + 2
+// 2: JMS : C(PC) <- EAddr + 1
+// 3: JMP : C(PC) <- EAddr
+// 4: All other instructions: C(PC) <- C(PC) + 1
+//
+//The following acts as a common check for any instruction
+//to check the PC after every instruction retire
+//We check after every instruction retire (UNSTALL), and compare golden and actual results
+
+//Check PC at the end of every instruction retire
+property check_PC_after_instr_retire;
+ @(posedge clk)
+ (instr_exec.current_state == UNSTALL) |=> (chkr_PC == PC_value)
+endproperty
+Check_PC_after_Instr_Retire: assert property(check_PC_after_instr_retire)
+else
+begin
+ $error("[ERROR] Incorrect PC contents on instruction retire");
+ $display("DUT PC = %h, CHK PC = %h\n", PC_value, chkr_PC);		
+end
+
+
+
+
+
+
+
+
 
 endmodule
 

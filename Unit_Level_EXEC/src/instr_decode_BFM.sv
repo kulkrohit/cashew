@@ -61,6 +61,7 @@ module instr_decode_BFM
    //Do nothing since system might be in reset sequence
    //wait until stall becomes 0	
   end
+   //Clear Acc and Link before driving any other opcodes
    pdp_op7_opcode = '{0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0};
 
    repeat (4) @(posedge clk);   	//Wait until stall is asserted before going ahead
