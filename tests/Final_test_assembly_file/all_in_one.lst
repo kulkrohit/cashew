@@ -1,0 +1,45 @@
+   1            / Instruction 
+   2            
+   3            
+   4            	*0200			/ start at address 0200
+   5 00200 7300 Main, 	cla cll 	/ clear AC and Link
+   6 00201 1300 	tad A 			/ add A to Accumulator A = 7777
+   7 00202 1301 	tad B 			/ add B  7777+ 1 
+   8 00203 3302 	dca C 			/ store sum at C
+   9 00204 7300 	cla cll 
+  10 00205 7001 	iac 			/ Acc = Acc + 1 
+  11 00206 0301 	and B   		/ Acc = B * Acc   
+  12 00207 2000 	isz				/ mem= mem + 1 
+  13 00210 7300 	cla cll 
+  14 00211 3000 	dca
+  15 00212 2000 	isz 			/ increments pc = pc + 1 
+  16 00213 7040 	cma
+  17 00214 0303 	and D 
+  18 00215 7010 	rar
+  19 00216 7006 	rtl
+  20 00217 7004 	ral
+  21 00220 7012 	rtr
+  22 00221 7500 	sma
+  23 00222 7450 	sna
+  24 00223 7510 	spa
+  25 00224 7440 	sza
+  26 00225 7430 	szl 
+  27 00226 4230 	jms subroutine
+  28 00227 5233 done,jmp exit 
+  29            	
+  30 00230 1304 subroutine,	tad E 
+  31 00231 3305 			dca F
+  32 00232 5227 			jmp done
+  33            
+  34 00233 7402 exit, hlt						
+  35            	
+  36            
+  37            	* 0300
+  38            	
+  39 00300 7777 	A,  7777
+  40 00301 0001 	B,	1
+  41 00302 0000 	C,	0
+  42 00303 1055 	D,  1055
+  43 00304 0002 	E,  2
+  44 00305 0000 	F,  0				
+  45            	$Main 
