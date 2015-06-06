@@ -3,21 +3,17 @@
 
 	*0200			/ start at address 0200
 Main, 	cla cll 	/ clear AC and Link
-	tad A 			/ add A to Accumulator
-	tad B 			/ add B
+	tad A 			/ add A to Accumulator A = 7777
+	tad B 			/ add B  7777+ 1 
 	dca C 			/ store sum at C
-	hlt 			/ Halt program
-	jmp Main		/ To continue - goto Main
 	cla cll 
-	iac 			/ Acc = 1
-	and C   		/ Acc = C * Acc 
-	iac 			/ Acc = Acc old + 1  
+	iac 			/ Acc = Acc + 1 
+	and B   		/ Acc = B * Acc   
 	isz				/ mem= mem + 1 
 	cla cll 
-	iac 
+	dca
 	isz 			/ increments pc = pc + 1 
 	cma
-	cla cll
 	and D 
 	rar
 	rtl
@@ -29,22 +25,21 @@ Main, 	cla cll 	/ clear AC and Link
 	sza
 	szl 
 	jms subroutine
-	cla cll 
-	jmp Main
+done,jmp exit 
 	
 subroutine,	tad E 
-			tad F
-			dca 
-			jmp subroutine
-						
+			dca F
+			jmp done
+
+exit, hlt						
 	
+
 	* 0300
 	
-	A,  1
+	A,  7777
 	B,	1
 	C,	0
-	D,  5
+	D,  1055
 	E,  2
-	F,  3
-				
+	F,  0				
 	$Main 
