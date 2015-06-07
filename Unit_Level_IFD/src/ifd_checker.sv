@@ -36,9 +36,9 @@ module ifd_checker
 );
 
 //Internal variables
-logic  [`DATA_WIDTH-1:0] fetched_instr;
-logic [1:0] rst_ref_counter;
-
+logic [`DATA_WIDTH-1:0] fetched_instr;
+logic [1:0] 			rst_ref_counter;
+logic [2:0]				ifu_ref_counter;
 
 pdp_mem_opcode_s pdp_mem_opcode_chk = '0;
 pdp_op7_opcode_s pdp_op7_opcode_chk = '0;
@@ -163,6 +163,14 @@ endtask
 		(ifu_rd_req ==1) |-> (pdp_op7_opcode == pdp_op7_opcode_chk );
 	endproperty
 
+	
+// to check if thr fsm stays in 	send_req state for just 1 cycle 
+
+	property fsm_state_check_decode; 
+		@(posedge clk)
+		(ifu_ref_counter == 1) |-> (!ifu_rd_req);
+	endproperty 
+	
 
 //------------------------------------
 //Assertions 
@@ -198,9 +206,14 @@ p6: assert property (Op7_opcode_check)
 	else 
 		$display(" ERROR : Assertion failed : condition not met -- > decode unit failed to correctly decode the memory opcode,obtained op7_opcode =", pdp_op7_opcode,"Expected op7_opcode =",pdp_op7_opcode_chk );
 
-	
-//-----------------------------------------reference counter for the reset ---------------------------------------------//  
-	
+
+		
+p7: assert property (fsm_state_check_decode)
+	$display (" Success : Assertion passed : conditions met .. \n");
+	else 
+	$display("ERROR: Assertion failed: conditions not met --> FSM is in send_req state for more than 1 cycle");
+//-----------------------------------------reference counters  ---------------------------------------------//  
+	// for reset 
 	always_comb
 		begin 
 			if(reset_n==1)begin
@@ -209,6 +222,18 @@ p6: assert property (Op7_opcode_check)
 			else 
 				rst_ref_counter = 0 ;
 			end 
+			
+			
+	// for ifu_rd_req		
+	
+	always_comb
+		begin
+			if(ifu_rd_req ==1 )begin 
+				ifu_ref_counter = ifu_ref_counter + 1;
+				end 
+			else 
+				ifu_ref_counter = 0 ;
+		end 		
 		
 //-----------------------------------------------------------------------------------------------------------------------//	
 
