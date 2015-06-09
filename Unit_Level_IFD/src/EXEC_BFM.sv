@@ -41,7 +41,7 @@ module EXEC_BFM
  begin
   PC_value = 12'o200;
   stall = 1;
-  while(i < 10)
+  while(i < 100000000)
   begin
    if(reset_n)
    @(posedge clk);
