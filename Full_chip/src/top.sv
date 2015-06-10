@@ -22,37 +22,38 @@
 import pdp8_pkg::*;
 
 module top ();
-
+   // From clkgen_driver module
    wire clk;
    wire reset_n;
-
+  
+  // From EXEC module 
    wire stall;
    wire [`ADDR_WIDTH-1:0] PC_value;
+   wire                   exec_rd_req;
+   wire [`ADDR_WIDTH-1:0] exec_rd_addr;
+   wire [`DATA_WIDTH-1:0] exec_rd_data;
+   wire                   exec_wr_req;
+   wire [`ADDR_WIDTH-1:0] exec_wr_addr;
+   wire [`DATA_WIDTH-1:0] exec_wr_data;
+   
    wire                   ifu_rd_req;
    wire [`ADDR_WIDTH-1:0] ifu_rd_addr;
    wire [`DATA_WIDTH-1:0] ifu_rd_data;
 
-   wire                   exec_rd_req;
-   wire [`ADDR_WIDTH-1:0] exec_rd_addr;
-   wire [`DATA_WIDTH-1:0] exec_rd_data;
-
-   wire                   exec_wr_req;
-   wire [`ADDR_WIDTH-1:0] exec_wr_addr;
-   wire [`DATA_WIDTH-1:0] exec_wr_data;
-
+// from DECODE module 
    wire [`ADDR_WIDTH-1:0] base_addr;
-
    pdp_mem_opcode_s pdp_mem_opcode;
    pdp_op7_opcode_s pdp_op7_opcode;
 
+   
    // instances of modules used 
-   memory_pdp      memory_pdp (.*);
-   instr_decode    instr_decode(.*);
-   instr_exec      instr_exec(.*);
-   pdp8_checker	   pdp8_checker(.*);    	     // full chip checker 
-	
-   //bind instr_exec   exec_checker exec_checker(.*); // unit level checker for exec module 
-//   bind instr_decode ifd_checker  ifd_checker(.*);  // uit level checker for decode module 
+   memory_pdp      memory_pdp (.*);		// memory unit 
+   instr_decode    instr_decode(.*);	// instruction decode unit 
+   instr_exec      instr_exec(.*);		// execution unit 
+   
+  // unit level checker reused to form the full chip check  
+   bind instr_exec   exec_checker exec_checker(.*); // unit level checker for exec module 
+   bind instr_decode ifd_checker  ifd_checker(.*);  // uit level checker for decode module 
 
 // clock generator 
   clkgen_driver #(
@@ -60,8 +61,4 @@ module top ();
       .RESET_DURATION(500)) clkgen_driver (
       .clk     (clk),
       .reset_n (reset_n));
-
-
-
-
 endmodule
