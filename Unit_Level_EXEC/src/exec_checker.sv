@@ -5,7 +5,7 @@
 //
 //   Created by:   Rohit Kulkarni
 //   Date:         May 30, 2015
-// =======================================================================
+//   Modified on:  june 9,2015 =======================================================================
 
 
 `include "pdp8_pkg.sv"
@@ -183,7 +183,7 @@ module exec_checker
 // reference counter for exec_rd_req
 	always_comb
 		begin 
-			if(int_exec_rd_req ==1)begin
+			if(exec_rd_req ==1)begin
 				exec_ref_counter = exec_ref_counter + 1; 
 				end 
 			else 
@@ -298,6 +298,7 @@ begin
 $error("[ERROR] FSM is stuck in the MEM_RD_REQ state for more then one cycle")
 $display("FSM is in MEM_RD_REQ state for ",exec_ref_counter"cycles");
 end 
+
 endmodule
 
 
