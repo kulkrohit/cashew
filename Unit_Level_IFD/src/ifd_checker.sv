@@ -132,7 +132,7 @@ endtask
 
 // reference counter for ifu_rd_req
 
-	always_comb
+	always@(posedge clk)
 		begin
 			if(ifu_rd_req ==1 )begin 
 				ifu_ref_counter = ifu_ref_counter + 1;
