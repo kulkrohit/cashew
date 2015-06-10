@@ -47,7 +47,8 @@ module exec_checker
    reg [`ADDR_WIDTH-1:0] chkr_PC;		// Golden PC
    reg chkr_Link;
 
-
+   reg [1:0]	exec_ref_counter;		// reference counter 
+   
    // Enums for EXEC state machine (should have been defined in the package)
    // Define enums for the state machine
    enum {IDLE,
@@ -179,7 +180,15 @@ module exec_checker
  end
  endtask
 
-
+// reference counter for exec_rd_req
+	always_comb
+		begin 
+			if(int_exec_rd_req ==1)begin
+				exec_ref_counter = exec_ref_counter + 1; 
+				end 
+			else 
+				exec_ref_counter = 0 ;
+			end 		
  
 
 //------------------------------------
@@ -277,6 +286,16 @@ begin
 end
 
 
+// 5. checks the cycle latency the FSM  has in MEM_RD_REQ state  
+//based on opcodes if the DUT gets one of the following opcodes (TAD),(AND),(ISZ) it performs read operation for which the FSM jumps to MEM_RD_REQ state ,ideally the FSM should remain in this state for not more than one cycle 
+// This check is intended to 
+property exec_read_request_asserted; 
+	@(posedge clk)(exec_ref_counter ==1) |->##[0:1] !exec_rd_req;
+endproperty;
+exec_read_request_asserted: assert property (exec_read_request_asserted)
+else 
+$error("[ERROR] FSM is stuck in the MEM_RD_REQ state for more then one cycle")
+$display("DUT is in MEM_RD_REQ state for ",exec_ref_counter"cycles");
 endmodule
 
 
