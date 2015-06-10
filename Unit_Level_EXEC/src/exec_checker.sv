@@ -181,7 +181,7 @@ module exec_checker
  endtask
 
 // reference counter for exec_rd_req
-	always_comb
+	always@(posedge clk)
 		begin 
 			if(exec_rd_req ==1)begin
 				exec_ref_counter = exec_ref_counter + 1; 
