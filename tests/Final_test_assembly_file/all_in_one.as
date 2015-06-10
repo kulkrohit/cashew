@@ -1,9 +1,4 @@
-/this assembly file is directed to cover all the test cases ,it includes all the instrutions 
-/it is a deterministic type of stimuli which follows certain pattern to achieve all possible test conditions.
-/main highlights include : to check if the link bit is generated and complemented,
-						 / to check condition for isz with 0 and non-zero memory contents
-						 / subroutines and jumps 
-						 / to check if the instruction are turned as NOP which are not supported by the DUT 
+/assembly file to generate deterministic stimuli
 
 	*0200			/ start at address 0200
 Main, 	cla cll 	/ clear AC and Link
@@ -37,7 +32,7 @@ subroutine,	tad E 	/ add E
 
 exit, hlt			/ halt 			
 	
-// memory locations which store the data 
+/ memory locations which store the data 
 	* 0300
 	
 	A,  7777
