@@ -258,4 +258,12 @@ $error("[ERROR] FSM is stuck in the SEND_REQ state for more than 1 cycle");
 $display("FSM is stuck in the SEND_REQ state for",ifu_ref_counter,"cycles");
 end 
 
+//property to check if the ifu_rd_addr is valid and stable for fetching the new data when the Exec unit de-asserts the stall. 
+property valid_ifu_read_saddress ; 
+		@(posedge clk) (!stall) |-> (ifu_rd_addr !== 12'bx || ifu_rd_addr !== 12'bz);
+endproperty  
+valid_ifu_read_address:assert property (valid_ifu_read_address)
+else 
+$display("IFU read address is not stable or valid after the stall is de-asserted by the Execution unit");
+
 endmodule
