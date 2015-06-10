@@ -1,0 +1,6 @@
+
+# ** Error: [ERROR] Incorrect link bit contents on instruction retire
+#    Time: 765 ns Started: 735 ns  Scope: top.instr_exec.exec_checker.Check_Link_bit_after_Instr_Retire File: exec_checker.sv Line: 251
+# DUT link bit = 0, CHK link bit = 1
+# 
+
