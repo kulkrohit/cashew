@@ -28,12 +28,23 @@ localparam JMP_MAIN  = (12'ha80);
 
 //Internal variables
 integer no_instr = 0;
+int count = 1;
 
 always @(posedge clk)
 begin
- if(ifu_rd_req)
+ 
+
+ //This is inserted to cover for CLA_1
+ //Even after 10 million cycles, CLA_1 never occured in the stimuli
+ if(ifu_rd_req && count == 1)
+ begin
+  ifu_rd_data  <= 12'o7200;
+  count <= count + 1;
+ end
+ else if(ifu_rd_req && count > 1)
  begin
   ifu_rd_data  <= ({$random} % 12'hfff);
+  count <= count + 1;
  end
  else
  begin

@@ -38,7 +38,7 @@ module clkgen_driver
    // Define parameters
    parameter CLOCK_PERIOD = 10;
    parameter RESET_DURATION = 500;
-   parameter RUN_TIME = 5000000;
+   parameter RUN_TIME = 500000000;
 
    // Define internal registers
    reg int_clk;

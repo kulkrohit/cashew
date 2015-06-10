@@ -1,7 +1,7 @@
 // =======================================================================
 //   Filename:     checker_ifd.sv
 //   Description:  Checker implementation for:
-//					 Unit Level IFD Testbench
+//		   Unit Level IFD Testbench
 //
 //   Created by:   Rohit Kulkarni, Anuja Vaidya
 //   Date:         May 25, 2015

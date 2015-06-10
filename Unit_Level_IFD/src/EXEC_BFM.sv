@@ -41,12 +41,19 @@ module EXEC_BFM
  begin
   PC_value = 12'o200;
   stall = 1;
-  while(i < 100000000)
+  while(i < 100000)
   begin
    if(reset_n)
    @(posedge clk);
    begin 	
-    stall = ~stall;
+//    stall = ~stall;
+
+    //After coming out of reset, no need to stall since no instruction is getting executed
+    stall = 1'b0;
+
+    repeat (delay+2)  @(posedge clk);  
+
+    stall = {$random};
     delay = ({$random} % 4'hf);
     repeat (delay+2)  @(posedge clk);  
     i++;
@@ -78,7 +85,7 @@ module EXEC_BFM
    end
   end
 
-
+  $finish;
 
  end
  endtask
