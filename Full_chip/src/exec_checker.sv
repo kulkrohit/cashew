@@ -292,11 +292,11 @@ end
 property exec_read_request_asserted; 
 	@(posedge clk)(exec_ref_counter ==1) |->##[0:1] !exec_rd_req;
 endproperty;
-exec_read_request_asserted: assert property (exec_read_request_asserted)
+exec_read_Request_Asserted: assert property (exec_read_request_asserted)
 else 
 begin
-$error("[ERROR] FSM is stuck in the MEM_RD_REQ state for more then one cycle")
-$display("FSM is in MEM_RD_REQ state for ",exec_ref_counter"cycles");
+$error("[ERROR] FSM is stuck in the MEM_RD_REQ state for more then one cycle");
+$display("FSM is in MEM_RD_REQ state for ",exec_ref_counter,"cycles");
 end 
 
 endmodule
