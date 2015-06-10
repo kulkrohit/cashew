@@ -55,15 +55,40 @@ module instr_decode_BFM
  //Otherwise Acc and Link remain X throughout sim
  task clear_Acc_link_and_drive_op;
  begin 
+  //Make both opcodes
+  pdp_op7_opcode = '0;
+  pdp_mem_opcode = '0;
+
   while(stall !== 1'b0)
   begin
     @(posedge clk);
    //Do nothing since system might be in reset sequence
    //wait until stall becomes 0	
   end
-   //Clear Acc and Link before driving any other opcodes
-   pdp_op7_opcode = '{0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0};
+  //Clear Acc and Link before driving any other opcodes
+  pdp_op7_opcode = '{0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0};
+  repeat (4) @(posedge clk);   	//Wait until stall is asserted before going ahead
 
+  while(stall !== 1'b0)
+  begin
+    @(posedge clk);
+   //wait until stall becomes 0	
+  end
+
+   //Inserting a NOP to get full state coverage
+   //We could not get the FSM to go into NOP state even after running for more than 10 million opcodes
+   //We personally think it is just something to do with probablility
+   //Any illegal opcode is executed as NOP
+   pdp_op7_opcode = '{1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+   repeat (4) @(posedge clk);   	//Wait until stall is asserted before going ahead
+
+  while(stall !== 1'b0)
+  begin
+    @(posedge clk);
+   //wait until stall becomes 0	
+  end
+
+   pdp_mem_opcode = '{0,1,0,0,0,0,9'b111111111};
    repeat (4) @(posedge clk);   	//Wait until stall is asserted before going ahead
 
    //Start driving random opcodes
@@ -78,10 +103,10 @@ module instr_decode_BFM
  static integer no_instr = 0; 
  begin
 
-  pdp_op7_opcode = 'x;
-  pdp_mem_opcode = 'x;
+  pdp_op7_opcode = '0;
+  pdp_mem_opcode = '0;
 
-  while(no_instr < 100)
+  while(no_instr < 1000000)
   begin
    @(posedge clk);
    if(!stall)

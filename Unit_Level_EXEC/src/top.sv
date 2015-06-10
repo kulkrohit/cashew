@@ -50,8 +50,7 @@ module top ();
       .clk     (clk),
       .reset_n (reset_n));
 
-
-   memory_pdp       memory_pdp (.*);
+   Memory_BFM       Memory_BFM(.*);
    instr_exec       instr_exec(.*);
    instr_decode_BFM instr_decode_BFM(.*);
    bind instr_exec exec_checker CHKR_INST(.*);
