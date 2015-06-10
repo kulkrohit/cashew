@@ -294,8 +294,10 @@ property exec_read_request_asserted;
 endproperty;
 exec_read_request_asserted: assert property (exec_read_request_asserted)
 else 
+begin
 $error("[ERROR] FSM is stuck in the MEM_RD_REQ state for more then one cycle")
 $display("DUT is in MEM_RD_REQ state for ",exec_ref_counter"cycles");
+end 
 endmodule
 
 
