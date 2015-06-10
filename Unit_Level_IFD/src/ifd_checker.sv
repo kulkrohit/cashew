@@ -39,7 +39,7 @@ module ifd_checker
 reg [`DATA_WIDTH-1:0] fetched_instr;
 pdp_mem_opcode_s pdp_mem_opcode_chk = '0;
 pdp_op7_opcode_s pdp_op7_opcode_chk = '0;
-
+reg [1:0] ifu_ref_counter;
 
 //Enums copied from design. Should have been in a package
    enum {IDLE,
@@ -128,6 +128,18 @@ begin
   end
 end
 endtask
+
+
+// reference counter for ifu_rd_req
+
+	always_comb
+		begin
+			if(ifu_rd_req ==1 )begin 
+				ifu_ref_counter = ifu_ref_counter + 1;
+				end 
+			else 
+				ifu_ref_counter = 0 ;
+		end 
 
 //------------------------------------
 //	Assertions
@@ -235,5 +247,15 @@ begin
 end
 
 
+// this property checks when the read request to the memory in SEND_REQ state the FSM stays in that state for just 1 cycles and the jumps to fetching the data 
+property ifu_read_request_asserted;
+	@(posedge clk) (ifu_ref_counter ==1) |->##[0:1] !ifu_rd_req ;
+endproperty
+ifu_read_request_asserted:assert property (ifu_read_request_asserted)
+else 
+begin 
+$error("[ERROR] FSM is stuck in the SEND_REQ state for more than 1 cycle");
+$display("FSM is stuck in the SEND_REQ state for",ifu_ref_counter,"cycles");
+end 
 
 endmodule
