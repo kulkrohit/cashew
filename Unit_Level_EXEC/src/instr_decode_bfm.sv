@@ -160,7 +160,7 @@ module instr_decode_bfm
    @(posedge clk);
    if(!stall)
    begin
-    rand_fetched_instr  = ({$random} % 18'h3ffff);
+    rand_fetched_instr  = ({$random} % 22'h3fffff);
     pdp_op7_opcode = rand_fetched_instr;
     no_instr++;  
    end
