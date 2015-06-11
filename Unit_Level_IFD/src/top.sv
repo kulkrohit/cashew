@@ -2,10 +2,6 @@
 //   Department of Electrical and Computer Engineering
 //   Portland State University
 //
-//   Course name:  ECE 510 - Pre-Silicon Validation
-//   Term & Year:  Spring 2015
-//   Instructor :  Tareque Ahmad
-//
 //   Project:      Hardware implementation of PDP8
 //         
 //   Filename:     top.sv
@@ -50,13 +46,13 @@ module top ();
 
 
    //Instantiate memory_bfm here
-   Memory_BFM	   Memory_BFM(.*);
+   memory_bfm	   memory_bfm(.*);
 
    //Instantiate instr_decode here
    instr_decode    instr_decode(.*);
 
    //Instantiate exec_bfm here
-   EXEC_BFM	  EXEC_BFM(.*);
+   exec_bfm	  exec_bfm(.*);
 
    //Bind checker instance here	
    bind instr_decode ifd_checker IFD_CHECKER(.*);
