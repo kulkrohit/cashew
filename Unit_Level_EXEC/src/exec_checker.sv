@@ -5,7 +5,7 @@
 //
 //   Created by:   Rohit Kulkarni
 //   Date:         May 30, 2015
-//   Modified on:  june 9,2015 =======================================================================
+// =======================================================================
 
 
 `include "pdp8_pkg.sv"
@@ -38,17 +38,16 @@ module exec_checker
    input   [`DATA_WIDTH-1:0] exec_rd_data  	// Read data returned by memory
    );
 
-   reg	is_mem_opcode; 			 	// Signal to detect a new memory instruction
-   reg	is_op7_opcode; 				// Signal to detect a new op7 instruction
+   reg	is_mem_opcode; 			 		// Signal to detect a new memory instruction
+   reg	is_op7_opcode; 					// Signal to detect a new op7 instruction
    reg [`DATA_WIDTH-1:0] operand;		// operand read from memory for certain instructions
-   reg [`DATA_WIDTH-1:0] DUT_result;		// DUT result written to memory
-   reg [`DATA_WIDTH-1:0] chkr_result;		// CHKR result written to memory
+   reg [`DATA_WIDTH-1:0] DUT_result;	// DUT result written to memory
+   reg [`DATA_WIDTH-1:0] chkr_result;	// CHKR result written to memory
    reg [`DATA_WIDTH:0]   chkr_Acc;		// Golden Accumulator with 1 extra bit for carry 
    reg [`ADDR_WIDTH-1:0] chkr_PC;		// Golden PC
    reg chkr_Link;
 
-   reg [1:0]	exec_ref_counter;		// reference counter 
-   
+
    // Enums for EXEC state machine (should have been defined in the package)
    // Define enums for the state machine
    enum {IDLE,
@@ -79,7 +78,13 @@ module exec_checker
   join
  end
 
- //Task to latch exec_rd_data
+  /*
+ -----------------------------------------------------------------------------
+	Task 		: latch exec_rd_data
+	Description	: Taps the EXEC - MEM interface and latches the operand fetched.
+				  Operand is nothing but exec_rd_data.	
+----------------------------------------------------------------------------
+ */
  task latch_exec_rd_data;
  begin
   while(1)
@@ -95,7 +100,15 @@ module exec_checker
  endtask 
 
 
- //Task to latch exec_wr_data
+  /*
+ -----------------------------------------------------------------------------
+	Task 		: latch_exec_wr_data
+	Description	: Taps the EXEC - MEM interface and latches the result written to memory.
+				  Result is nothing but exec_wr_data.	
+				  
+    Notes		: Not all instructions write result to memory.				  
+----------------------------------------------------------------------------
+ */
  task latch_exec_wr_data;
  begin
   while(1)
@@ -111,7 +124,26 @@ module exec_checker
  endtask 
  
 
- //Task to compute golden result
+   /*
+ -----------------------------------------------------------------------------
+	Task 		: compute_golden_result
+	Description	: Computes the golden result to be checked after every instruction retire.
+				  By retire, we mean the point when instruction has written its result
+				  and a new instruction is fetched.
+				  We use the State UNSTALL to detect instruction retire.		
+				  
+				  Following golden results are generated to be compared with:
+				  1: Golden accumulator contents (Acc)
+				  2: Golden link bit contents
+				  3: Golden PC contents
+				  4: Golden result written to memory
+				  
+    Notes		: Not all instructions write result to memory.
+
+	Dependencies: Design (instr_exec)
+----------------------------------------------------------------------------
+ */
+ 
  task compute_golden_result;
  begin
 
@@ -180,19 +212,11 @@ module exec_checker
  end
  endtask
 
-// reference counter for exec_rd_req
-	always@(posedge clk)
-		begin 
-			if(exec_rd_req ==1)begin
-				exec_ref_counter = exec_ref_counter + 1; 
-				end 
-			else 
-				exec_ref_counter = 0 ;
-			end 		
+
  
 
 //------------------------------------
-//	Checks / Assertions
+//	Properties / Checks
 //------------------------------------
 
 
@@ -205,6 +229,7 @@ module exec_checker
 //that requires EXEC unit to write into the memory.
 //We tap it at the mem boundary and compare actual and golden result.
 //Check if result written to memory is correct for all instructions that write to memory
+`ifndef DISABLE_RULE_1
 property check_result_written_to_memory;
  @(posedge clk)
  (exec_wr_req) |=> ##2 (chkr_result == DUT_result)
@@ -215,7 +240,7 @@ begin
  $error("[ERROR] Incorrect result is written to memory");
  $display("DUT result = %h, CHK result = %h\n", DUT_result, chkr_result);		
 end
-
+`endif
 
 // For all instructions that require writing the result into Accumulator
 // 1: AND : C(AC) <- C(AC) AND C(EAddr)
@@ -228,6 +253,7 @@ end
 //We check after every instruction retire (UNSTALL), and compare golden and actual results
 
 //Check accumulator at the end of every instruction retire
+`ifndef DISABLE_RULE_2
 property check_Acc_after_instr_retire;
  @(posedge clk)
  (instr_exec.current_state == UNSTALL) |=> ##2 (chkr_Acc[`DATA_WIDTH-1:0] == instr_exec.intAcc[`DATA_WIDTH-1:0])
@@ -238,7 +264,7 @@ begin
  $error("[ERROR] Incorrect accumulator contents on instruction retire");
  $display("DUT Acc = %h, CHK Acc = %h\n", instr_exec.intAcc[`DATA_WIDTH-1:0], chkr_Acc[`DATA_WIDTH-1:0]);		
 end
-
+`endif
 
 
 // For all instructions that may change the Link bit
@@ -250,6 +276,7 @@ end
 //We check after every instruction retire (UNSTALL), and compare golden and actual results
 
 //Check Link bit at the end of every instruction retire
+`ifndef DISABLE_RULE_3
 property check_Link_bit_after_instr_retire;
  @(posedge clk)
  (instr_exec.current_state == UNSTALL) |=> ##2 (chkr_Link == instr_exec.intLink)
@@ -260,7 +287,7 @@ begin
  $error("[ERROR] Incorrect link bit contents on instruction retire");
  $display("DUT link bit = %h, CHK link bit = %h\n", instr_exec.intLink, chkr_Link);		
 end
-
+`endif
 
 // PC changes invariably increments by 1 after every instruction
 // except a few special ones like 
@@ -274,6 +301,7 @@ end
 //We check after every instruction retire (UNSTALL), and compare golden and actual results
 
 //Check PC at the end of every instruction retire
+`ifndef DISABLE_RULE_4
 property check_PC_after_instr_retire;
  @(posedge clk)
  (instr_exec.current_state == UNSTALL) |=> (chkr_PC == PC_value)
@@ -284,20 +312,7 @@ begin
  $error("[ERROR] Incorrect PC contents on instruction retire");
  $display("DUT PC = %h, CHK PC = %h\n", PC_value, chkr_PC);		
 end
-
-
-// 5. checks the cycle latency the FSM  has in MEM_RD_REQ state  
-//based on opcodes if the DUT gets one of the following opcodes (TAD),(AND),(ISZ) it performs read operation for which the FSM jumps to MEM_RD_REQ state ,ideally the FSM should remain in this state for not more than one cycle 
-// This check is intended to 
-property exec_read_request_asserted; 
-	@(posedge clk)(exec_ref_counter ==1) |->##[0:1] !exec_rd_req;
-endproperty;
-exec_read_Request_Asserted: assert property (exec_read_request_asserted)
-else 
-begin
-$error("[ERROR] FSM is stuck in the MEM_RD_REQ state for more then one cycle");
-$display("FSM is in MEM_RD_REQ state for ",exec_ref_counter,"cycles");
-end 
+`endif
 
 endmodule
 

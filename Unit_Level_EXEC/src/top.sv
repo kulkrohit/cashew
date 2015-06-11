@@ -50,9 +50,9 @@ module top ();
       .clk     (clk),
       .reset_n (reset_n));
 
-   Memory_BFM       Memory_BFM(.*);
+   memory_bfm       memory_bfm(.*);
    instr_exec       instr_exec(.*);
-   instr_decode_BFM instr_decode_BFM(.*);
+   instr_decode_bfm instr_decode_bfm(.*);
    bind instr_exec exec_checker CHKR_INST(.*);
 
 endmodule
